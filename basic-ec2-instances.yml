@@ -1,0 +1,28 @@
+---
+  - name: Install common packages for all of my EC2 instances
+    hosts: all
+    vars:
+      gpg_keyfile: /tmp/docker.gpg
+    become: yes 
+    tasks:
+      - name: Download GPG key for Docker repository
+        get_url:
+          url: https://download.docker.com/linux/ubuntu/gpg
+          dest: "{{ gpg_keyfile }}"
+
+      - name: Read GPG keyfile for APT
+        command: apt-key add "{{ gpg_keyfile }}"
+      
+      - name: Add Docker repository to sources
+        shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+      - name: Install docker, lynx and other stuff I use
+        apt: pkg={{item}} state=installed update_cache=yes
+        with_items:
+          - lynx
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - docker-ce
+
